@@ -38,9 +38,11 @@ run(Mod, Cmd, Ctxt) ->
 
     %% NOTE: Enable tracing to troubleshoot failures.
     %% catch user_default:dbgon(edoc_lib,write_file),
+    meck:new(epp, [unstick, passthrough]),
     meck:new(edoc_wiki, []),
     meck:new(edown_lib, []),
     try
+        meck:expect(epp, default_encoding, fun () -> utf8 end),
         meck:expect(edoc_wiki, parse_xml, fun parse_xml/2),
         meck:expect(edoc_wiki, expand_text, fun expand_text/2),
         meck:expect(edown_lib, redirect_uri, fun(E) -> redirect_uri(TopLevelReadme, E) end),
@@ -49,7 +51,8 @@ run(Mod, Cmd, Ctxt) ->
         Mod:run(Cmd, Ctxt)
     after
         meck:unload(edown_lib),
-        meck:unload(edoc_wiki)
+        meck:unload(edoc_wiki),
+        meck:unload(epp)
     end.
 
 %% parse_xml/2
@@ -58,8 +61,8 @@ parse_xml(Data, Line) ->
 
 parse_xml_1(Text, Line) ->
     Text1 = "<doc>" ++ Text ++ "</doc>",
-    Opts = [{line, Line}, {encoding, 'iso-8859-1'}],
-    case catch {ok, xmerl_scan:string(Text1, Opts)} of
+    Opts = [{line, Line}, {encoding, 'utf-8'}],
+    case catch {ok, xmerl_scan:string(binary_to_list(unicode:characters_to_binary(Text1)), Opts)} of
         {ok, {E, _}} ->
             E#xmlElement.content;
         {'EXIT', {fatal, {Reason, L, _C}}} ->
@@ -83,11 +86,20 @@ expand_text(Cs, L) ->
     In = FileName ++ ".in",
     Out = FileName ++ ".out",
     ok = filelib:ensure_dir(In),
-    ok = file:write_file(In, Cs),
+    case file:open(In, [write, {encoding, utf8}]) of
+        {ok, FD} ->
+            Cs1 = re:replace(Cs, "^\\s{2,3}(?=\\S)", "", [unicode, global, multiline]),
+            io:put_chars(FD, Cs1),
+            ok = file:close(FD);
+        {error, R} ->
+            R1 = file:format_error(R),
+            edoc_report:report("could not write file '~ts': ~ts.", [In, R1]),
+            exit(error)
+    end,
     try
         {ok, _Ok} = asciidoc(In, Out, L),
         {ok, Res} = file:read_file(Out),
-        binary_to_list(Res)
+        unicode:characters_to_list(Res)
     after
         ok = file:delete(In),
         ok = file:delete(Out)
@@ -98,7 +110,7 @@ asciidoc(In, Out, _Line) ->
     PortSettings = [exit_status, use_stdio,
                     {args, ["-s",
                             "-a", "data-uri",
-                            "-a", "encoding=ISO-8859-1",
+                            "-a", "encoding=UTF-8",
                             "-b", "xhtml11",
                             "-o", Out, In]}],
     Port = open_port({spawn_executable, Command}, PortSettings),
