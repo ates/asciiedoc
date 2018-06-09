@@ -1,13 +1,10 @@
 
-REBAR?=./rebar
+REBAR?=./rebar3
 
 .PHONY: all clean deps compile xref doc test eunit eqc proper triq \
 	compile-for-eunit compile-for-eqc compile-for-proper compile-for-triq
 
 all: compile
-
-deps:
-	$(REBAR) get-deps
 
 clean:
 	$(REBAR) clean

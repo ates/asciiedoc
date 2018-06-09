@@ -40,7 +40,7 @@ run(Mod, Cmd, Ctxt) ->
     %% catch user_default:dbgon(edoc_lib,write_file),
     meck:new(epp, [unstick, passthrough]),
     meck:new(edoc_wiki, []),
-    meck:new(edown_lib, []),
+    meck:new(edown_lib, [unstick, passthrough]),
     try
         meck:expect(epp, default_encoding, fun () -> utf8 end),
         meck:expect(edoc_wiki, parse_xml, fun parse_xml/2),
