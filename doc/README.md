@@ -5,6 +5,7 @@
 Copyright (c) 2011-2013 by Joseph Wayne Norton
 
 __Authors:__ Joseph Wayne Norton ([`norton@alum.mit.edu`](mailto:norton@alum.mit.edu)).
+
 <p>AsciiEdoc is an Erlang application that integrates AsciiDoc with EDoc
 or EDoc with EDown.  This may sound a little crazy at first but the
 primary reasons are:</p>
@@ -22,13 +23,13 @@ Dislike EDoc's primitive wiki support.
 <li>
 <p>
 Not crazy about Markdown either. Markdown is helpful only in one
-  sense - GitHub integration.
+sense - GitHub integration.
 </p>
 </li>
 <li>
 <p>
 AsciiDoc is simple, easy to use, friendly to humans, and yet
-  expressive "enough" to produce high-quality documentation.
+expressive "enough" to produce high-quality documentation.
 </p>
 </li>
 </ul>

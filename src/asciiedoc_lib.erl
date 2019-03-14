@@ -109,7 +109,7 @@ asciidoc(In, Out, _Line) ->
     Command = os:cmd("which asciidoc | tr -d \"\n\""),
     PortSettings = [exit_status, use_stdio,
                     {args, ["-s",
-                            "-a", "data-uri",
+%%                            "-a", "data-uri",
                             "-a", "encoding=UTF-8",
                             "-b", "xhtml11",
                             "-o", Out, In]}],
