@@ -189,9 +189,9 @@ temp_dir() ->
 move_files(FromDir, ToDir, Ignore) ->
     lists:foreach(fun (FN) ->
                           NotIgnored =not lists:member(FN, Ignore),
-                          From = NotIgnored andalso filename:join(FromDir, FN),
-                          To = NotIgnored andalso filename:join(ToDir, FN),
-                          case {filelib:is_regular(From),filelib:is_dir(From)} of
+                          From = filename:join(FromDir, FN),
+                          To = filename:join(ToDir, FN),
+                          case {NotIgnored andalso filelib:is_regular(From),NotIgnored andalso filelib:is_dir(From)} of
                               {true, false} ->
                                   {ok, _} = file:copy(From, To);
                                {false, true} ->
