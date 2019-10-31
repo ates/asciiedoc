@@ -48,7 +48,11 @@ run(Mod, Cmd, Ctxt) ->
         meck:expect(edown_lib, redirect_uri, fun(E) -> redirect_uri(TopLevelReadme, E) end),
         %% NOTE: Enable edoc_doclet for HTML output
         %% edoc_doclet:run(Cmd, Ctxt)
-        Mod:run(Cmd, Ctxt)
+        Res = Mod:run(Cmd, Ctxt),
+        TmpDir = temp_dir(),
+        DocDir = Ctxt#context.dir,
+        move_files(TmpDir, DocDir, [".asciidoctor"]),
+        Res
     after
         meck:unload(edown_lib),
         meck:unload(edoc_wiki),
@@ -79,7 +83,7 @@ throw_error(L, D) ->
 
 %% expand_text/2
 expand_text(Cs, L) ->
-    DirName = filename:join(["/", "tmp", ?MODULE_STRING]),
+    DirName = temp_dir(),
     {A,B,C}= my_now(),
     Unique = lists:flatten(io_lib:format("~p-~p.~p.~p",[node(),A,B,C])),
     FileName = filename:join([DirName, Unique]),
@@ -106,12 +110,13 @@ expand_text(Cs, L) ->
     end.
 
 asciidoc(In, Out, _Line) ->
-    Command = os:cmd("which asciidoc | tr -d \"\n\""),
+    Command = os:cmd("which asciidoctor | tr -d \"\n\""),
     PortSettings = [exit_status, use_stdio,
                     {args, ["-s",
 %%                            "-a", "data-uri",
                             "-a", "encoding=UTF-8",
-                            "-b", "xhtml11",
+                            "-b", "xhtml5",
+                            "-r", "asciidoctor-diagram",
                             "-o", Out, In]}],
     Port = open_port({spawn_executable, Command}, PortSettings),
     case asciidoc_loop(Port, []) of
@@ -177,3 +182,22 @@ my_now() ->
         false ->
             apply(erlang, now, [])
     end.
+
+temp_dir() ->
+    filename:join(["/", "tmp", ?MODULE_STRING]).
+
+move_files(FromDir, ToDir, Ignore) ->
+    lists:foreach(fun (FN) ->
+                          NotIgnored =not lists:member(FN, Ignore),
+                          From = NotIgnored andalso filename:join(FromDir, FN),
+                          To = NotIgnored andalso filename:join(ToDir, FN),
+                          case {filelib:is_regular(From),filelib:is_dir(From)} of
+                              {true, false} ->
+                                  {ok, _} = file:copy(From, To);
+                               {false, true} ->
+                                  ok = file:make_dir(To),
+                                  move_files(From, To, Ignore);
+                              {false, false} ->
+                                  ok
+                          end
+                  end, filelib:wildcard("*.*", FromDir)).
