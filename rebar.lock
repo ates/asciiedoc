@@ -1,10 +1,12 @@
-{"1.1.0",
-[{<<"edown">>,{pkg,<<"edown">>,<<"0.8.1">>},0},
+{"1.2.0",
+[{<<"edown">>,{pkg,<<"edown">>,<<"0.8.4">>},0},
  {<<"meck">>,
   {git,"git://github.com/eproxus/meck.git",
-       {ref,"65b79f46553d591cdf42e060cc49e3add7a4d116"}},
+       {ref,"cc47aab4b64a46a5409c1a93353d44a367b41454"}},
   0}]}.
 [
 {pkg_hash,[
- {<<"edown">>, <<"7333B6F6B7BBC736C263E9CEB8261667D7C8F7D92E251829F1A9FE8F24E7B694">>}]}
+ {<<"edown">>, <<"C0ADDD5530A66E4C8B4A68FFDE122F7DD710EAED815492E438AAAFE63D4C76E1">>}]},
+{pkg_hash_ext,[
+ {<<"edown">>, <<"1CAF8F99BEE8B671EFA752EA163C9299A120BFC4A43820E1C5CE1BFDF63B4446">>}]}
 ].

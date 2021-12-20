@@ -32,9 +32,17 @@
 %%% API
 %%%===================================================================
 
+-if(?OTP_RELEASE >= 24).
+context_opts(#doclet_context{opts = Opts}) -> Opts.
+context_dir(#doclet_context{dir = Dir}) -> Dir.
+-else.
+context_opts(#context{opts = Opts}) -> Opts.
+context_dir(#context{dir = Dir}) -> Dir.
+-endif.
+
 run(Mod, Cmd, Ctxt) ->
     %% Extract top_level_readme
-    TopLevelReadme = proplists:get_value(top_level_readme, Ctxt#context.opts),
+    TopLevelReadme = proplists:get_value(top_level_readme, context_opts(Ctxt)),
 
     %% NOTE: Enable tracing to troubleshoot failures.
     %% catch user_default:dbgon(edoc_lib,write_file),
@@ -50,8 +58,7 @@ run(Mod, Cmd, Ctxt) ->
         %% edoc_doclet:run(Cmd, Ctxt)
         Res = Mod:run(Cmd, Ctxt),
         TmpDir = temp_dir(),
-        DocDir = Ctxt#context.dir,
-        move_files(TmpDir, DocDir, [".asciidoctor"]),
+        move_files(TmpDir, context_dir(Ctxt), [".asciidoctor"]),
         Res
     after
         meck:unload(edown_lib),
